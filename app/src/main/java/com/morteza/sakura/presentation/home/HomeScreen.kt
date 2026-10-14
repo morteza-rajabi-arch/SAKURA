@@ -61,7 +61,9 @@ private fun getTodayDate(): String {
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onSettingsClick: () -> Unit = {}
+) {
     var showAddTaskDialog by remember { mutableStateOf(false) }
     val taskViewModel: TaskViewModel = viewModel()
     val tasks by taskViewModel.tasks.collectAsState()
@@ -84,7 +86,9 @@ fun HomeScreen() {
                     .padding(horizontal = 20.dp)
                     .padding(top = 12.dp, bottom = 24.dp)
             ) {
-                HeaderSection()
+                HeaderSection(
+                    onSettingsClick = onSettingsClick
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -178,14 +182,17 @@ fun HomeScreen() {
     }
 }
 
+
 @Composable
-private fun HeaderSection() {
+private fun HeaderSection(
+    onSettingsClick: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // در چیدمان RTL، اولین فرزند در سمت راست قرار می‌گیرد.
+        // لوگوی ساکورا
         Image(
             painter = painterResource(id = R.drawable.sakura_logo),
             contentDescription = "لوگوی ساکورا",
@@ -197,6 +204,7 @@ private fun HeaderSection() {
 
         Spacer(modifier = Modifier.size(14.dp))
 
+        // تاریخ و متن خوشامدگویی
         Column(
             modifier = Modifier.weight(1f),
             horizontalAlignment = Alignment.End
@@ -212,7 +220,7 @@ private fun HeaderSection() {
             Spacer(modifier = Modifier.height(7.dp))
 
             Text(
-                text = "صبح بخیر، نگار",
+                text = "صبح بخیر",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -230,9 +238,28 @@ private fun HeaderSection() {
                 modifier = Modifier.fillMaxWidth()
             )
         }
+
+        Spacer(modifier = Modifier.size(12.dp))
+
+        // آیکون تنظیمات
+        Surface(
+            onClick = onSettingsClick,
+            modifier = Modifier.size(44.dp),
+            shape = CircleShape,
+            color = SakuraIconBackground
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "⚙",
+                    fontSize = 23.sp,
+                    color = Color(0xFF8F4D62)
+                )
+            }
+        }
     }
 }
-
 
 @Composable
 private fun FocusCard(

@@ -1,6 +1,6 @@
 
 package com.morteza.sakura.presentation.navigation
-import com.morteza.sakura.presentation.tasks.TasksScreen
+import androidx.compose.material3.Switch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -24,22 +25,29 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.morteza.sakura.presentation.home.HomeScreen
+import com.morteza.sakura.presentation.tasks.TasksScreen
 
 private enum class SakuraTab(
     val title: String,
     val symbol: String
 ) {
     HOME("خانه", "⌂"),
-    TASKS("کارها", "✓"),
-    STUDY("مطالعه", "◷"),
+    TASKS("وظایف", "✓"),
     GOALS("هدف‌ها", "◎"),
-    MORE("بیشتر", "•••")
+    STUDY("مطالعه", "◷")
 }
 
 @Composable
-fun SakuraNavigation() {
+fun SakuraNavigation(
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit
+) {
     var selectedTab by rememberSaveable {
         mutableIntStateOf(0)
+    }
+
+    var showSettings by rememberSaveable {
+        mutableStateOf(false)
     }
 
     Column(
@@ -51,52 +59,161 @@ fun SakuraNavigation() {
                 .fillMaxWidth(),
             color = MaterialTheme.colorScheme.background
         ) {
-            when (SakuraTab.entries[selectedTab]) {
-                SakuraTab.HOME -> HomeScreen()
-
-                SakuraTab.TASKS -> TasksScreen()
-
-                SakuraTab.STUDY -> PlaceholderScreen(
-                    title = "مطالعه",
-                    description = "جلسات مطالعه و زمان واقعی مطالعه در این بخش قرار می‌گیرند."
+            if (showSettings) {
+                SettingsScreen(
+                    isDarkTheme = isDarkTheme,
+                    onThemeChange = onThemeChange,
+                    onBack = {
+                        showSettings = false
+                    }
                 )
+            } else {
+                when (SakuraTab.entries[selectedTab]) {
+                    SakuraTab.HOME -> HomeScreen(
+                        onSettingsClick = {
+                            showSettings = true
+                        }
+                    )
 
-                SakuraTab.GOALS -> PlaceholderScreen(
-                    title = "هدف‌ها",
-                    description = "هدف‌ها و میزان پیشرفتت در این بخش نمایش داده می‌شوند."
-                )
+                    SakuraTab.TASKS -> TasksScreen()
 
-                SakuraTab.MORE -> PlaceholderScreen(
-                    title = "بیشتر",
-                    description = "تقویم، گزارش‌ها و تنظیمات در این بخش قرار می‌گیرند."
-                )
+                    SakuraTab.GOALS -> PlaceholderScreen(
+                        title = "هدف‌ها",
+                        description = "هدف‌ها و میزان پیشرفتت در این بخش نمایش داده می‌شوند."
+                    )
+
+                    SakuraTab.STUDY -> PlaceholderScreen(
+                        title = "مطالعه",
+                        description = "جلسات مطالعه و زمان واقعی مطالعه در این بخش قرار می‌گیرند."
+                    )
+                }
             }
         }
 
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 8.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
+        if (!showSettings) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 8.dp
             ) {
-                SakuraTab.entries.forEachIndexed { index, tab ->
-                    NavigationItem(
-                        tab = tab,
-                        selected = selectedTab == index,
-                        modifier = Modifier.weight(1f),
-                        onClick = { selectedTab = index }
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = 6.dp,
+                            vertical = 10.dp
+                        ),
+                    horizontalArrangement = Arrangement.SpaceAround,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SakuraTab.entries.forEachIndexed { index, tab ->
+                        NavigationItem(
+                            tab = tab,
+                            selected = selectedTab == index,
+                            modifier = Modifier.weight(1f),
+                            onClick = {
+                                selectedTab = index
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 }
+
+
+@Composable
+private fun SettingsScreen(
+    isDarkTheme: Boolean,
+    onThemeChange: (Boolean) -> Unit,
+    onBack: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                onClick = onBack,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text(
+                    text = "→ بازگشت",
+                    modifier = Modifier.padding(
+                        horizontal = 16.dp,
+                        vertical = 12.dp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                text = "تنظیمات",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "حالت تاریک",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = if (isDarkTheme) {
+                        "تم تاریک فعال است"
+                    } else {
+                        "تم روشن فعال است"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+
+            Switch(
+                checked = isDarkTheme,
+                onCheckedChange = onThemeChange,
+                colors = androidx.compose.material3.SwitchDefaults.colors(
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    checkedBorderColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    uncheckedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+
+        }
+    }
+}
+
 
 @Composable
 private fun NavigationItem(
